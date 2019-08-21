@@ -1,0 +1,134 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<title>Exchange rates</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<link href="https://fonts.googleapis.com/css?family=Bree+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="css/lightpick.css">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+</head>
+
+<body>
+<h1 align="center">Exchange rate period analyzer</h1>
+<h2 align="center" th:text="'Rate of ' + ${selectedCurrencyName} + ' to EURO in period from ' 
++ ${lowDate} + ' to ' + ${highDate} + '. ' +  ${rateChange}"></h2>
+
+<!-- Main form, auto-submitted -->
+<form id="mainForm" align="center">
+   <select class= "select" id="currencySelector" th:action="@{/getRates}" th:name="selectedCurrencyCode"
+   onchange='if(this.value != "NONE") { this.form.submit(); }'>
+      <option th:value="${selectedCurrencyCode}" th:text="${selectedCurrencyName}"></option>
+      <option th:each="entry : ${currencyMap.entrySet()}" th:value="${entry.key}" th:text="${entry.value}">
+      </option>
+   </select>
+   <input class="datapicker" type="text" name="daterange" value="'${daterange}'"/>
+</form>
+
+<!-- Rates table -->
+<table class="mainTable">
+		<tr>
+			<th>Date</th>
+			<th>Rate</th>
+		</tr>
+	<tbody id="tableData"></tbody>
+</table>
+
+<!-- Message if rate list is empty -->
+<h2 id="noDataMessage" align="center"> No data about this currency at selected period </h2>
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+    var ratesData = /*[[${ratesList}]]*/ 'default'; 
+    
+    <!-- Table data loading  -->
+    window.onload = () => {
+    	loadTableData(ratesData)
+    };
+    
+    function loadTableData(ratesData) {
+    	var tableBody = document.getElementById('tableData'); 
+    	var noDataMessage = document.getElementById('noDataMessage'); 
+    	var dataHtml = '';
+    	
+    	if(ratesData.length == 0){
+        	noDataMessage.style.display = "run-in";
+    	}
+    	else{
+    		noDataMessage.style.display = "none";
+    	}
+    	
+    	for(var rate of ratesData){
+    		 
+    		console.log(rate.date);
+    		
+    		dataHtml += `<tr><td>${rate.date}</td><td>${rate.rate}</td></tr>`;
+    	}
+    	
+    	tableBody.innerHTML = dataHtml;
+    	
+        <!-- Message if rates are not precise  -->
+    	if(/*[[${isPrecise}]]*/ == true){
+    		alert('Please pay attention that beginning/end of the period you have selected refers to days (or time of the day) when this rate is not published by LB.lt. As a result, you will see only the nearest old rates when rate was published.');
+    	}
+    
+    	}
+    
+    <!-- Date picker  -->
+    $(function() {
+      $('input[name="daterange"]').daterangepicker({
+        opens: 'center',
+        maxDate: moment(),
+        minDate: new Date(2014, 09, 30),
+        startDate: /*[[${lowDate}]]*/,
+        endDate: /*[[${highDate}]]*/,
+        showDropdowns: true,
+        autoApply: true,
+        locale: {
+            "format": "YYYY-MM-DD",
+            "separator": " - ",
+            "applyLabel": "Apply",
+            "cancelLabel": "Cancel",
+            "fromLabel": "From",
+            "toLabel": "To",
+            "customRangeLabel": "Custom",
+            "weekLabel": "W",
+            "daysOfWeek": [
+                "Su",
+                "Mo",
+                "Tu",
+                "We",
+                "Th",
+                "Fr",
+                "Sa"
+            ],
+            "monthNames": [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December"
+            ],
+            "firstDay": 1
+        },
+      }, function(start, end, label) {
+    	  console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+    	  setTimeout(function() {
+    		  document.getElementById("mainForm").submit();
+    		}, 100);
+      });
+    });
+/*]]>*/
+</script>
+</body>
+</html>
