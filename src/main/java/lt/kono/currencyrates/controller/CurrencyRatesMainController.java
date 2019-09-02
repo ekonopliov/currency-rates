@@ -61,6 +61,7 @@ public class CurrencyRatesMainController {
 		model.addAttribute("currencyMap", currencyMap);
 		
 		//Checking whether rate has changed, and if yes, by how much
+		if(ratesList!=null) {
 		if(ratesList.size() > 0) {
 			
 			Double change = ratesList.get(0).getRate() - ratesList.get(ratesList.size()-1).getRate();
@@ -78,6 +79,7 @@ public class CurrencyRatesMainController {
 			if(!ratesList.get(0).getDate().equals(highDate) || (!ratesList.get(ratesList.size()-1).getDate().equals(lowDate))) {
 			model.addAttribute("isPrecise",true);
 			}
+		}
 		}
 		else {
 			model.addAttribute("rateChange", "");
